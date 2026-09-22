@@ -75,7 +75,7 @@ export default function Products({ selectedCategory }) {
     setIsAddModalOpen(true);
   };
 
-  // Yangi mahsulot qo'shish (image_url ga o'zgartirildi)
+  // Yangi mahsulot qo'shish
   const handleCreateProduct = async (e) => {
     e.preventDefault();
 
@@ -104,7 +104,7 @@ export default function Products({ selectedCategory }) {
     }
   };
 
-  // Edit modalini ochish (image_url ga o'zgartirildi)
+  // Edit modalini ochish
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
     setNameUz(typeof product.name === 'object' ? product.name?.uz : product.name || "");
@@ -117,7 +117,7 @@ export default function Products({ selectedCategory }) {
     setIsEditModalOpen(true);
   };
 
-  // Mahsulotni yangilash (image_url ga o'zgartirildi)
+  // Mahsulotni yangilash
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     if (!editingProduct) return;
@@ -159,7 +159,7 @@ export default function Products({ selectedCategory }) {
     }
   };
 
-  // Kompyuterdan rasm yuklash
+  // Kompyuterdan rasm yuklash ('categories' bucketiga to'g'rilandi)
   const handleFileUpload = async (e) => {
     try {
       setUploading(true);
@@ -171,13 +171,13 @@ export default function Products({ selectedCategory }) {
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('mahsulot')
+        .from('categories')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('mahsulot')
+        .from('categories')
         .getPublicUrl(filePath);
 
       setImage(data.publicUrl);
@@ -251,14 +251,13 @@ export default function Products({ selectedCategory }) {
             visibleProducts.map((item) => {
               const nameUz = typeof item.name === 'object' ? item.name?.uz : item.name;
               
-              // image_url ustunini tekshirish
               const rawImage = item.image_url || item.image;
               const imageName = typeof rawImage === 'string' ? rawImage.trim() : '';
               let imageUrl = imageName;
               if (imageName && !imageName.startsWith('http')) {
                 const { data } = supabase
                   .storage
-                  .from('mahsulot')
+                  .from('categories')
                   .getPublicUrl(imageName);
                 imageUrl = data.publicUrl;
               }

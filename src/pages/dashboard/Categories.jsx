@@ -37,30 +37,35 @@ export default function Categories({
 
   // Ma'lumotlarni olish
   const fetchCategoriesAndProducts = useCallback(async () => {
-    const { data: catData, error: catError } = await supabase
-      .from('categories')
-      .select('*');
+    try {
+      const { data: catData, error: catError } = await supabase
+        .from('categories')
+        .select('*');
 
-    if (catError) {
-      console.error("Kategoriyalarni olishda xatolik:", catError);
-    } else {
-      setCategories(catData || []);
-      // Agar kategoriya tanlanmagan bo'lsa, birinchisini tanlaymiz
-      if (catData && catData.length > 0 && !selectedCategory) {
-        setSelectedCategory(catData[0].id);
+      if (catError) {
+        console.error("Kategoriyalarni olishda xatolik:", catError.message);
+      } else {
+        setCategories(catData || []);
+        if (catData && catData.length > 0 && !selectedCategory) {
+          setSelectedCategory(catData[0].id);
+        }
       }
-    }
 
-    const { data: prodData, error: prodError } = await supabase
-      .from('products')
-      .select('category_id');
+      const { data: prodData, error: prodError } = await supabase
+        .from('products')
+        .select('category_id');
 
-    if (!prodError && prodData) {
-      const counts = {};
-      prodData.forEach((item) => {
-        counts[item.category_id] = (counts[item.category_id] || 0) + 1;
-      });
-      setProductsCount(counts);
+      if (prodError) {
+        console.error("Mahsulotlarni olishda xatolik:", prodError.message);
+      } else if (prodData) {
+        const counts = {};
+        prodData.forEach((item) => {
+          counts[item.category_id] = (counts[item.category_id] || 0) + 1;
+        });
+        setProductsCount(counts);
+      }
+    } catch (err) {
+      console.error("Kutilmagan xatolik:", err);
     }
   }, [selectedCategory, setSelectedCategory]);
 
@@ -131,13 +136,13 @@ export default function Categories({
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('mahsulot')
+        .from('categories')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('mahsulot')
+        .from('categories')
         .getPublicUrl(filePath);
 
       setImage(data.publicUrl);
